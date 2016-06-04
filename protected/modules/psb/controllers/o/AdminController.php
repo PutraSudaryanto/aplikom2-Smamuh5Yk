@@ -144,18 +144,96 @@ class AdminController extends Controller
 	 */
 	public function actionAdd() 
 	{
+		if(isset($_GET['batch']))
+			$batch = PsbYearBatch::model()->findByPk($_GET['batch']);
+		else {
+			$criteria=new CDbCriteria;
+			$criteria->condition = 'curdate() BETWEEN `batch_start` AND `batch_finish`';
+			$criteria->compare('publish',1);
+			$batch = PsbYearBatch::model()->find($criteria);
+		}
+		
+		$setting = PsbSettings::model()->findByPk(1,array(
+			'select' => 'form_online',
+		));
 		$model=new PsbRegisters;
+		$school=new PsbSchools;
+		if($setting->form_online == 1)
+			$author=new OmmuAuthors;
 
 		// Uncomment the following line if AJAX validation is needed
 		$this->performAjaxValidation($model);
+		$this->performAjaxValidation($school);
+		if($setting->form_online == 1)
+			$this->performAjaxValidation($author);
 
 		if(isset($_POST['PsbRegisters'])) {
 			$model->attributes=$_POST['PsbRegisters'];
+			$school->attributes=$_POST['PsbSchools'];
+			$school->validate();
 			
-			if($model->save()) {
-				Yii::app()->user->setFlash('success', Yii::t('phrase', 'PsbRegisters success created.'));
-				//$this->redirect(array('view','id'=>$model->register_id));
-				$this->redirect(array('manage'));
+			if($setting->form_online == 1) {
+				$author->attributes=$_POST['OmmuAuthors'];
+				
+				$authorFind = OmmuAuthors::model()->find(array(
+					'select' => 'author_id, email',
+					'condition' => 'publish = :publish AND email = :email',
+					'params' => array(
+						':publish' => 1,
+						':email' => strtolower($author->email),
+					),
+				));
+				if($authorFind != null)
+					$model->author_id = $authorFind->author_id;
+				else {
+					if($author->save())
+						$model->author_id = $author->author_id;
+				}
+			} else
+				$model->author_id = 0;
+			
+			if($model->validate() && $school->validate()) {
+				//if($model->school_id != '' && $model->school_id != 0) {
+					$schoolFind = PsbSchools::model()->find(array(
+						'select' => 'school_id, school_name',
+						'condition' => 'school_name = :school',
+						'params' => array(
+							':school' => $school->school_name,
+						),
+					));
+					if($schoolFind != null)
+						$model->school_id = $schoolFind->school_id;
+					else {
+						if($school->save())
+							$model->school_id = $school->school_id;
+					}
+					
+				/*
+				} else {
+					$schoolFind = PsbSchools::model()->find(array(
+						'select' => 'school_id, school_name',
+						'condition' => 'school_name = :school',
+						'params' => array(
+							':school' => $school->school_name,
+						),
+					));
+					if($schoolFind != null)
+						$model->school_id = $schoolFind->school_id;
+					else {
+						if($school->save())
+							$model->school_id = $school->school_id;
+					}
+				}
+				*/
+				
+				if($model->save()) {
+					Yii::app()->user->setFlash('success', Yii::t('phrase', 'PsbRegisters success created.'));
+					//$this->redirect(array('view','id'=>$model->register_id));
+					if($model->back_field == 1)
+						$this->redirect(array('manage'));
+					else
+						$this->redirect(array('add'));
+				}
 			}
 		}
 
@@ -163,7 +241,11 @@ class AdminController extends Controller
 		$this->pageDescription = '';
 		$this->pageMeta = '';
 		$this->render('admin_add',array(
+			'batch'=>$batch,
+			'setting'=>$setting,
 			'model'=>$model,
+			'school'=>$school,
+			'author'=>$setting->form_online == 1 ? $author : 0,
 		));
 	}
 
@@ -174,18 +256,79 @@ class AdminController extends Controller
 	 */
 	public function actionEdit($id) 
 	{
+		$setting = PsbSettings::model()->findByPk(1,array(
+			'select' => 'form_online, field_religion, field_wali',
+		));
+		
 		$model=$this->loadModel($id);
+		$batch = PsbYearBatch::model()->findByPk($model->batch_id);
+		$school=PsbSchools::model()->findByPk($model->school_id);		
+		if($setting->form_online == 1) {
+			$author=OmmuAuthors::model()->findByPk($model->author_id);
+			if($author == null)
+				$author=new OmmuAuthors;
+		}
 
 		// Uncomment the following line if AJAX validation is needed
 		$this->performAjaxValidation($model);
+		$this->performAjaxValidation($school);
+		if($setting->form_online == 1)
+			$this->performAjaxValidation($author);
 
 		if(isset($_POST['PsbRegisters'])) {
 			$model->attributes=$_POST['PsbRegisters'];
+			$school->attributes=$_POST['PsbSchools'];
+			$school->validate();
 			
-			if($model->save()) {
-				Yii::app()->user->setFlash('success', Yii::t('phrase', 'PsbRegisters success updated.'));
-				//$this->redirect(array('view','id'=>$model->register_id));
-				$this->redirect(array('manage'));
+			if($setting->form_online == 1) {
+				$author->attributes=$_POST['OmmuAuthors'];
+				$author->save();
+			}
+			
+			if($model->validate() && $school->validate()) {
+				if($model->school_id_old != $model->school_id) {
+					//if($model->school_id != '' && $model->school_id != 0) {
+						$schoolFind = PsbSchools::model()->find(array(
+							'select' => 'school_id, school_name',
+							'condition' => 'school_name = :school',
+							'params' => array(
+								':school' => $school->school_name,
+							),
+						));
+						if($schoolFind != null)
+							$model->school_id = $schoolFind->school_id;
+						else {
+							$school=new PsbSchools;
+							if($school->save())
+								$model->school_id = $school->school_id;
+						}
+						
+					/*
+					} else {
+						$schoolFind = PsbSchools::model()->find(array(
+							'select' => 'school_id, school_name',
+							'condition' => 'school_name = :school',
+							'params' => array(
+								':school' => $school->school_name,
+							),
+						));
+						if($schoolFind != null)
+							$model->school_id = $schoolFind->school_id;
+						else {
+							$school=new PsbSchools;
+							if($school->save())
+								$model->school_id = $school->school_id;
+						}
+					}
+					*/
+				}// else
+				//	$school->save();
+				
+				if($model->save()) {
+					Yii::app()->user->setFlash('success', Yii::t('phrase', 'PsbRegisters success updated.'));
+					//$this->redirect(array('view','id'=>$model->register_id));
+					$this->redirect(array('manage'));
+				}
 			}
 		}
 
@@ -193,7 +336,11 @@ class AdminController extends Controller
 		$this->pageDescription = '';
 		$this->pageMeta = '';
 		$this->render('admin_edit',array(
+			'setting'=>$setting,
 			'model'=>$model,
+			'batch'=>$batch,
+			'school'=>$school,
+			'author'=>$setting->form_online == 1 ? $author : 0,
 		));
 	}
 	
