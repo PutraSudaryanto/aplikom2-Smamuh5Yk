@@ -123,7 +123,6 @@ class PsbRegisters extends CActiveRecord
 			'batch_relation' => array(self::BELONGS_TO, 'PsbYearBatch', 'batch_id'),
 			'city_relation' => array(self::BELONGS_TO, 'OmmuZoneCity', 'birth_city'),
 			'religion_relation' => array(self::BELONGS_TO, 'PsbReligions', 'religion'),
-			'school_relation' => array(self::BELONGS_TO, 'PsbSchools', 'school_id'),
 			'school' => array(self::BELONGS_TO, 'PsbSchools', 'school_id'),
 			'creation' => array(self::BELONGS_TO, 'Users', 'creation_id'),
 		);
@@ -155,14 +154,14 @@ class PsbRegisters extends CActiveRecord
 			'creation_date' => Yii::t('attribute', 'Creation Date'),
 			'creation_id' => Yii::t('attribute', 'Creation'),
 			'creation_search' => Yii::t('attribute', 'Creation'),
-			'school_un_average' => Yii::t('attribute', 'School Un Average'),
-			'year_search' => Yii::t('attribute', 'Year'),
-			'batch_search' => Yii::t('attribute', 'Batch'),
 			'birth_city_search' => Yii::t('attribute', 'Birth City'),
 			'school_search' => Yii::t('attribute', 'School'),
 			'batch_field' => Yii::t('attribute', 'Batch Detected'),
 			'birthcity_field' => Yii::t('attribute', 'Birth City'),
+			'year_search' => Yii::t('attribute', 'Year'),
+			'batch_search' => Yii::t('attribute', 'Batch'),
 			'back_field' => Yii::t('attribute', 'Back to Manage'),
+			'school_un_average' => Yii::t('attribute', 'School Un Average'),
 		);
 		/*
 			'Register' => 'Register',
@@ -204,7 +203,6 @@ class PsbRegisters extends CActiveRecord
 		// @todo Please modify the following code to remove attributes that should not be searched.
 
 		$criteria=new CDbCriteria;
-
 		$criteria->compare('t.register_id',strtolower($this->register_id),true);
 		$criteria->compare('t.author_id',strtolower($this->author_id),true);
 		$criteria->compare('t.status',$this->status);
@@ -238,7 +236,7 @@ class PsbRegisters extends CActiveRecord
 			$criteria->compare('t.creation_id',$_GET['creation']);
 		else
 			$criteria->compare('t.creation_id',$this->creation_id);
-		$criteria->compare('t.school_un_average',$this->school_un_average);
+		$criteria->compare('t.school_un_average',$this->school_un_average,true);
 		
 		// Custom Search
 		$criteria->with = array(
@@ -351,7 +349,7 @@ class PsbRegisters extends CActiveRecord
 				'value' => '$data->batch_relation->batch_name',
 			);
 			$this->defaultColumns[] = 'register_name';
-			$this->defaultColumns[] = 'nisn';
+			//$this->defaultColumns[] = 'nisn';
 			$this->defaultColumns[] = array(
 				'name' => 'birth_city_search',
 				'value' => '$data->city_relation->city',
@@ -400,12 +398,16 @@ class PsbRegisters extends CActiveRecord
 				'value' => '$data->school->school_name',
 			);
 			$this->defaultColumns[] = array(
-				'header' => Yii::t('phrase', 'Average'),
-				'name' => 'school_un_average',
+				'header' => 'school_un_average',
 				'value' => '$data->school_un_average',
 				'htmlOptions' => array(
 					'class' => 'center',
 				),
+			);
+			/*
+			$this->defaultColumns[] = array(
+				'name' => 'creation_search',
+				'value' => '$data->creation_id != 0 ? $data->creation->displayname : "-"',
 			);
 			$this->defaultColumns[] = array(
 				'name' => 'creation_date',
@@ -433,6 +435,21 @@ class PsbRegisters extends CActiveRecord
 					),
 				), true),
 			);
+			if(!isset($_GET['type'])) {
+				$this->defaultColumns[] = array(
+					'name' => 'status',
+					'value' => 'Utility::getPublish(Yii::app()->controller->createUrl("status",array("id"=>$data->register_id)), $data->status, 1)',
+					'htmlOptions' => array(
+						'class' => 'center',
+					),
+					'filter'=>array(
+						1=>Yii::t('phrase', 'Yes'),
+						0=>Yii::t('phrase', 'No'),
+					),
+					'type' => 'raw',
+				);
+			}
+			*/
 		}
 		parent::afterConstruct();
 	}
@@ -450,8 +467,51 @@ class PsbRegisters extends CActiveRecord
 			
 		} else {
 			$model = self::model()->findByPk($id);
-			return $model;			
+			return $model;
 		}
+	}
+
+	/**
+	 * get Detail
+	 */
+	public static function getDetailCourse($data)
+	{
+		$countData = count($data);
+		$i = 0;
+		foreach($data as $key => $val) {
+			$i++;
+			if($i != $countData)
+				$return .= PsbCourses::getValue($key, $val).'<br/>';
+			else
+				$return .= PsbCourses::getValue($key, $val);					
+		}
+		
+		return $return;
+	}
+
+	/**
+	 * get Detail
+	 */
+	public static function getUNDetail($data, $valuation=1)
+	{
+		$data = unserialize($data);
+		$countData = count($data);
+			
+		if($valuation == 1 || $countData == 1)
+			$return = self::getDetailCourse($data[0]);
+		
+		else {
+			$i = 0;
+			foreach($data as $key => $val) {
+				$i++;
+				if($i != $countData)
+					$return .= self::getDetailCourse($data[$key]).'<hr/>';
+				else
+					$return .= self::getDetailCourse($data[$key]);
+			}
+		}
+		
+		return $return;
 	}
 
 	/**
@@ -462,22 +522,13 @@ class PsbRegisters extends CActiveRecord
 		$return = '';
 		$count = count($data);
 		for($i = 0; $i<$count; $i++) {
-			foreach($data[$i] as $key => $val) {
+			foreach($data[$i] as $key => $val)
 				$return[$key] = $return[$key] + $val;
-			}
 		}
 		
-		foreach($return as $key => $val) {
+		foreach($return as $key => $val)
 			$return[$key] = number_format($val/$count, 2);
-		}
 		
-		/*
-		$returnAttr = array_map(function($val, $key) {
-			return $key.'='.$val;
-		}, array_values($return), array_keys($return));
-		*/
-		
-		//return implode(',', $returnAttr);
 		return $return;
 	}
 
@@ -486,6 +537,7 @@ class PsbRegisters extends CActiveRecord
 	 */
 	public static function getUNAverage($data)
 	{
+		$data = unserialize($data);
 		$count = count($data);
 		$total = 0;
 		foreach($data as $key => $val)
@@ -496,7 +548,7 @@ class PsbRegisters extends CActiveRecord
 	}
 	
 	protected function afterFind() {
-		$this->school_un_average = $this->school_un_rank != '' ? self::getUNAverage(unserialize($this->school_un_rank)) : 0;
+		$this->school_un_average = $this->school_un_rank != '' ? number_format(self::getUNAverage($this->school_un_rank), 2) : 0;
 		parent::afterFind();		
 	}
 
