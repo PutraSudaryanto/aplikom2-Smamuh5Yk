@@ -114,6 +114,18 @@ mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\psb\models" "D
 mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\psb\controllers\o" "D:\htdocs\_project_ommu_module_psb\modules\psb_smamuh5yk\controllers\o"
 mklink /H "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\psb\controllers\CourseController.php" "D:\htdocs\_project_ommu_module_psb\modules\psb_smamuh5yk\controllers\CourseController.php"
 mklink /H "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\psb\controllers\SchoolController.php" "D:\htdocs\_project_ommu_module_psb\modules\psb_smamuh5yk\controllers\SchoolController.php"
-
 --
 mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\psb\views\o" "D:\htdocs\_project_ommu_module_psb\modules\psb_smamuh5yk\views\o"
+
+///dbs\\\
+mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\externals\dbs" "D:\htdocs\_project_ommu_module_psb\externals\dbs"
+mklink /H "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\dbs.yaml" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\dbs.yaml"
+mklink /H "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\LICENSE" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\LICENSE"
+mklink /H "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\DbsModule.php" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\DbsModule.php"
+mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\assets" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\assets"
+mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\components" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\components"
+mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\models" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\models"
+--
+mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\controllers\o" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\controllers\o"
+--
+mklink /J "D:\htdocs\_kampus_aplikom2_smamuh5yk\protected\modules\dbs\views\o" "D:\htdocs\_project_ommu_module_psb\modules\dbs_smamuh5yk\views\o"
