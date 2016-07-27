@@ -1,12 +1,12 @@
 <?php
 /**
- * PsbSettings
+ * DbsSettings
  * version: 0.0.1
  *
  * @author Putra Sudaryanto <putra@sudaryanto.id>
  * @copyright Copyright (c) 2016 Ommu Platform (ommu.co)
- * @created date 27 April 2016, 12:00 WIB
- * @link https://github.com/Ommu/Ommu-PSB
+ * @created date 27 July 2016, 03:22 WIB
+ * @link http://company.ommu.co
  * @contact (+62)856-299-4114
  *
  * This is the template for generating the model class of a specified table.
@@ -20,21 +20,18 @@
  *
  * --------------------------------------------------------------------------------------
  *
- * This is the model class for table "ommu_psb_settings".
+ * This is the model class for table "ommu_dbs_settings".
  *
- * The followings are the available columns in table 'ommu_psb_settings':
+ * The followings are the available columns in table 'ommu_dbs_settings':
  * @property integer $id
  * @property string $license
  * @property integer $permission
  * @property string $meta_keyword
  * @property string $meta_description
- * @property integer $form_online
- * @property integer $field_religion
- * @property integer $field_wali
  * @property string $modified_date
  * @property string $modified_id
  */
-class PsbSettings extends CActiveRecord
+class DbsSettings extends CActiveRecord
 {
 	public $defaultColumns = array();
 	
@@ -45,7 +42,7 @@ class PsbSettings extends CActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return PsbSettings the static model class
+	 * @return DbsSettings the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -57,7 +54,7 @@ class PsbSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'ommu_psb_settings';
+		return 'ommu_dbs_settings';
 	}
 
 	/**
@@ -68,13 +65,13 @@ class PsbSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('license, permission, meta_keyword, meta_description, form_online, field_religion, field_wali', 'required'),
-			array('id, permission, form_online, field_religion, field_wali', 'numerical', 'integerOnly'=>true),
+			array('license, permission, meta_keyword, meta_description', 'required'),
+			array('id, permission', 'numerical', 'integerOnly'=>true),
 			array('license', 'length', 'max'=>32),
 			array('modified_id', 'length', 'max'=>11),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, license, permission, meta_keyword, meta_description, form_online, field_religion, field_wali, modified_date, modified_id,
+			array('id, license, permission, meta_keyword, meta_description, modified_date, modified_id,
 				modified_search', 'safe', 'on'=>'search'),
 		);
 	}
@@ -102,22 +99,17 @@ class PsbSettings extends CActiveRecord
 			'permission' => Yii::t('attribute', 'Permission'),
 			'meta_keyword' => Yii::t('attribute', 'Meta Keyword'),
 			'meta_description' => Yii::t('attribute', 'Meta Description'),
-			'form_online' => Yii::t('attribute', 'Form Online'),
-			'field_religion' => Yii::t('attribute', 'Field Religion'),
-			'field_wali' => Yii::t('attribute', 'Field Wali'),
 			'modified_date' => Yii::t('attribute', 'Modified Date'),
 			'modified_id' => Yii::t('attribute', 'Modified'),
 			'modified_search' => Yii::t('attribute', 'Modified'),
 		);
+		
 		/*
 			'ID' => 'ID',
 			'License' => 'License',
 			'Permission' => 'Permission',
 			'Meta Keyword' => 'Meta Keyword',
 			'Meta Description' => 'Meta Description',
-			'Form Online' => 'Form Online',
-			'Field Religion' => 'Field Religion',
-			'Field Wali' => 'Field Wali',
 			'Modified Date' => 'Modified Date',
 			'Modified' => 'Modified',
 		
@@ -147,9 +139,6 @@ class PsbSettings extends CActiveRecord
 		$criteria->compare('t.permission',$this->permission);
 		$criteria->compare('t.meta_keyword',strtolower($this->meta_keyword),true);
 		$criteria->compare('t.meta_description',strtolower($this->meta_description),true);
-		$criteria->compare('t.form_online',$this->form_online);
-		$criteria->compare('t.field_religion',$this->field_religion);
-		$criteria->compare('t.field_wali',$this->field_wali);
 		if($this->modified_date != null && !in_array($this->modified_date, array('0000-00-00 00:00:00', '0000-00-00')))
 			$criteria->compare('date(t.modified_date)',date('Y-m-d', strtotime($this->modified_date)));
 		if(isset($_GET['modified']))
@@ -166,8 +155,7 @@ class PsbSettings extends CActiveRecord
 		);
 		$criteria->compare('modified.displayname',strtolower($this->modified_search), true);
 
-
-		if(!isset($_GET['PsbSettings_sort']))
+		if(!isset($_GET['DbsSettings_sort']))
 			$criteria->order = 't.id DESC';
 
 		return new CActiveDataProvider($this, array(
@@ -201,9 +189,6 @@ class PsbSettings extends CActiveRecord
 			$this->defaultColumns[] = 'permission';
 			$this->defaultColumns[] = 'meta_keyword';
 			$this->defaultColumns[] = 'meta_description';
-			$this->defaultColumns[] = 'form_online';
-			$this->defaultColumns[] = 'field_religion';
-			$this->defaultColumns[] = 'field_wali';
 			$this->defaultColumns[] = 'modified_date';
 			$this->defaultColumns[] = 'modified_id';
 		}
@@ -224,9 +209,6 @@ class PsbSettings extends CActiveRecord
 			$this->defaultColumns[] = 'permission';
 			$this->defaultColumns[] = 'meta_keyword';
 			$this->defaultColumns[] = 'meta_description';
-			$this->defaultColumns[] = 'form_online';
-			$this->defaultColumns[] = 'field_religion';
-			$this->defaultColumns[] = 'field_wali';
 			$this->defaultColumns[] = array(
 				'name' => 'modified_date',
 				'value' => 'Utility::dateFormat($data->modified_date)',
@@ -287,4 +269,5 @@ class PsbSettings extends CActiveRecord
 		}
 		return true;
 	}
+
 }
